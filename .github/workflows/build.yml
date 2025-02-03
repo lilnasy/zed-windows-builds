@@ -4,6 +4,19 @@ on:
   schedule:
     - cron: "0 0 * * *" # Runs every night at midnight UTC
   workflow_dispatch:
+    inputs:
+      repository:
+        description: Repository to clone and build
+        type: string
+        default: zed-industries/zed
+      ref:
+        description: Branch/tag/ref
+        type: string
+        default: "main"
+      patch:
+        description: Apply someone120's (Yakira's) patch fixing LSP server discovery
+        type: boolean
+        default: true
   pull_request:
 
 jobs:
@@ -34,12 +47,23 @@ jobs:
       - name: Checkout self
         uses: actions/checkout@v4
 
-      - name: Checkout Zed
-        uses: actions/checkout@v4
-        with:
-          repository: zed-industries/zed
-          ref: main
-          path: zed
+      - name: Checkout Zed      
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh repo clone ${{ inputs.repository || 'zed-industries/zed' }} zed -- -b ${{ inputs.ref || 'main' }}
+      
+      - name: Apply patch
+        if: ${{ inputs.patch != false }}
+        working-directory: zed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout https://github.com/zed-industries/zed/pull/22600 && \
+          git switch ${{ inputs.ref || 'main' }} && \
+          git config user.email "ci@c.i" && \
+          git config user.name "CI" && \
+          git merge slash-windows-fix
 
       - name: Install rust nightly
         uses: dtolnay/rust-toolchain@stable
