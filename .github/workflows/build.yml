@@ -53,7 +53,7 @@ jobs:
         run: gh repo clone ${{ inputs.repository || 'zed-industries/zed' }} zed -- -b ${{ inputs.ref || 'main' }}
       
       - name: Apply patch
-        if: ${{ inputs.patch != false }}
+        if: ${{ inputs.patch || github.event_name == 'schedule' }}
         working-directory: zed
         shell: bash
         env:
