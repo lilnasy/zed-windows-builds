@@ -1,8 +1,20 @@
-name: Build Zed Nightly
+name: Build
 
 on:
-  schedule:
-    - cron: "0 0 * * *" # Runs every night at midnight UTC
+  workflow_call:
+    inputs:
+      repository:
+        description: Repository to clone and build
+        type: string
+        default: zed-industries/zed
+      ref:
+        description: Branch/tag/ref to build
+        type: string
+        required: true
+      patch:
+        description: Apply someone120's (Yakira's) patch fixing LSP server discovery
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       repository:
@@ -10,14 +22,13 @@ on:
         type: string
         default: zed-industries/zed
       ref:
-        description: Branch/tag/ref
+        description: Branch/tag/ref to build
         type: string
-        default: "main"
+        default: main
       patch:
         description: Apply someone120's (Yakira's) patch fixing LSP server discovery
         type: boolean
         default: true
-  pull_request:
 
 jobs:
   build:
@@ -54,17 +65,17 @@ jobs:
       - name: Checkout Zed      
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh repo clone ${{ inputs.repository || 'zed-industries/zed' }} zed -- -b ${{ inputs.ref || 'main' }}
+        run: gh repo clone ${{ inputs.repository }} zed -- -b ${{ inputs.ref }}
       
       - name: Apply patch
-        if: ${{ inputs.patch || github.event_name == 'schedule' }}
+        if: ${{ inputs.patch }}
         working-directory: zed
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh pr checkout https://github.com/zed-industries/zed/pull/22600 && \
-          git switch ${{ inputs.ref || 'main' }} && \
+          git switch --detach ${{ inputs.ref }} && \
           git config user.email "ci@c.i" && \
           git config user.name "CI" && \
           git merge slash-windows-fix
@@ -94,40 +105,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: zed/target/release/zed.exe
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Get the current date
-        id: date
-        run: echo "CURRENT_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-
-      - name: Create release directories and zip
-        run: |
-          mkdir -p zed-release zed-release-opengl
-          mv artifacts/zed-release/zed.exe zed-release/
-          mv artifacts/zed-release-opengl/zed.exe zed-release-opengl/
-          zip -r zed-windows.zip zed-release/*
-          zip -r zed-windows-opengl.zip zed-release-opengl/*
-
-      - name: Upload release build artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: ${{ env.CURRENT_DATE }}
-          tag_name: ${{ env.CURRENT_DATE }}
-          draft: false
-          make_latest: true
-          files: |
-            zed-windows.zip
-            zed-windows-opengl.zip
+          path: zed/target/release/zed.exe 
