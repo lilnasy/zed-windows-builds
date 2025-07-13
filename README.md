@@ -8,11 +8,9 @@
 
 #### See the releases section for the latest build
 
-
 This repository runs a Github Actions workflow daily to build a release version of the Zed Editor for Windows.
 
 It is based on https://github.com/deevus/zed-windows-builds, but adds a bugfix for [zed-industries/zed#20559](https://github.com/zed-industries/zed/issues/20559), an issue that prevented most LSPs from being started.
-
 
 ### Credits
 - [deevus](https://github.com/deevus) for creating the Github Actions workflow these builds are forked from. See the [original](https://github.com/deevus/zed-windows-builds).

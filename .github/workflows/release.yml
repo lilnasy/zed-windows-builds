@@ -61,3 +61,4 @@ jobs:
           prerelease: ${{ inputs.is_prerelease }}
           make_latest: true
           files: release/*
+
