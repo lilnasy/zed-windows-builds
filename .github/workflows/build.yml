@@ -64,11 +64,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout Zed
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.repository }}
-          ref: ${{ inputs.ref }}
-          path: zed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh repo clone ${{ inputs.repository }} zed -- -b ${{ inputs.ref }}
+      
+      - name: Apply patch
+        if: ${{ inputs.patch }}
+        working-directory: zed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout https://github.com/zed-industries/zed/pull/22600 && \
+          git switch --detach ${{ inputs.ref }} && \
+          git config user.email "ci@c.i" && \
+          git config user.name "CI" && \
+          git merge slash-windows-fix
 
       - name: Install rust nightly
         uses: dtolnay/rust-toolchain@stable
