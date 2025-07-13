@@ -25,6 +25,10 @@ on:
         description: Branch/tag/ref to build
         type: string
         default: main
+      patch:
+        description: Apply someone120's (Yakira's) patch fixing LSP server discovery
+        type: boolean
+        default: true
 
 jobs:
   build:
