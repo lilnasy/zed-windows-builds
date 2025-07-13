@@ -23,18 +23,36 @@ jobs:
       contents: write
 
     steps:
-      - name: Download release artifacts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+        continue-on-error: false
+
+      - name: Verify downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          find artifacts -type f -name "*.exe" -exec ls -la {} \;
+
+          # Check if Vulkan build exists
+          if [ ! -f "artifacts/zed-release/zed.exe" ]; then
+            echo "❌ FAIL: Vulkan artifact not found"
+          fi
+
+          if [ ! -f "artifacts/zed-release-opengl/zed.exe" ]; then
+            echo "❌ FAIL: OpenGL artifact not found"
+          fi
 
       - name: Create release directories and zip
         run: |
-          mv artifacts/zed-release/zed.exe zed.exe
-          mv artifacts/zed-release-opengl/zed.exe zed-opengl.exe
+          chmod +x scripts/prepare-release.sh
+          ./scripts/prepare-release.sh
 
       - name: Upload release build artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.2.2
         with:
           name: ${{ inputs.release_tag }}
           tag_name: ${{ inputs.release_tag }}
@@ -42,6 +60,5 @@ jobs:
           draft: false
           prerelease: ${{ inputs.is_prerelease }}
           make_latest: true
-          files: |
-            zed.exe
-            zed-opengl.exe 
+          files: release/*
+

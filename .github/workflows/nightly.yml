@@ -22,13 +22,13 @@ jobs:
           # Set repository and ref based on inputs
           REPO="zed-industries/zed"
           REF="main"
-          
+
           # Get latest commit info
           COMMIT=$(gh api repos/$REPO/commits/$REF --jq '{sha: .sha, message: .commit.message, html_url: .html_url}')
           SHA=$(echo $COMMIT | jq -r '.sha' | cut -c1-8)
           MSG=$(echo $COMMIT | jq -r '.message' | head -n 1)
           URL=$(echo $COMMIT | jq -r '.html_url')
-          
+
           echo "Building pre-release from $REPO#$SHA: $MSG"
           echo "build_ref=$REF" >> $GITHUB_OUTPUT
           echo "build_repo=$REPO" >> $GITHUB_OUTPUT
@@ -45,6 +45,7 @@ jobs:
   trigger_release:
     name: Release
     needs: [find_latest_commit, trigger_build]
+    if: always() && needs.find_latest_commit.result == 'success'
     uses: ./.github/workflows/release.yml
     with:
       is_prerelease: true
