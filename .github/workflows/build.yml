@@ -63,7 +63,7 @@ jobs:
       - name: Checkout self
         uses: actions/checkout@v4
 
-      - name: Checkout Zed
+      - name: Checkout Zed      
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh repo clone ${{ inputs.repository }} zed -- -b ${{ inputs.ref }}
@@ -108,4 +108,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: zed/target/release/zed.exe
+          path: zed/target/release/zed.exe 
