@@ -29,7 +29,7 @@ jobs:
           MSG=$(echo $COMMIT | jq -r '.message' | head -n 1)
           URL=$(echo $COMMIT | jq -r '.html_url')
 
-          echo "Building release from $REPO#$SHA: $MSG"
+          echo "Building pre-release from $REPO#$SHA: $MSG"
           echo "build_ref=$REF" >> $GITHUB_OUTPUT
           echo "build_repo=$REPO" >> $GITHUB_OUTPUT
           echo "release_tag=$(date +'%m-%d-%Y')" >> $GITHUB_OUTPUT
