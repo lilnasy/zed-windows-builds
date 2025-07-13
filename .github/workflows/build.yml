@@ -109,3 +109,4 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: zed/target/release/zed.exe 
+
